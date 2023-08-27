@@ -9,11 +9,18 @@ const {
         userToFillingStationOwnerByIdForAdmin,
         userToUnFillingStationOwnerByIdForAdmin,
         userBannedByIdForAdmin,
-        userUnbannedByIdForAdmin
+        userUnbannedByIdForAdmin,
+        processRegister
        } = require('../controllers/userController');
 
 const userRouter = express.Router();
 const upload = require('../middlewares/uploadImage');
+
+
+
+userRouter.post('/process-register',
+                  upload.single("image"), 
+                  processRegister);
 
 
 userRouter.get('/',

@@ -12,3 +12,6 @@
 
 ### my Note ###
 ## await User.find({ userType: 'serviceowner' });
+## git add .
+## git commit -m "name any type"
+## git push

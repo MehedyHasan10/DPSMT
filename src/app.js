@@ -10,6 +10,7 @@ const { errorResponse } = require('./controllers/responseController');
 
 const seedRouter = require('./routers/seedRouter');
 const userRouter = require('./routers/userRouter');
+const authRouter = require('./routers/authRouter');
 
 
 
@@ -29,6 +30,7 @@ app.use(bodyParser.urlencoded({extended: true}));
 
 app.use('/api/seed',seedRouter);
 app.use('/api/users',userRouter);
+app.use('/api/auth',authRouter);
 
 
 

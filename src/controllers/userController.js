@@ -362,6 +362,53 @@ const deleteFillingStationOwnerByIdForAdmin = async (req, res, next) => {
 }
 };
 
+
+const processRegister = async (req, res, next) => {
+  try {
+    const {userType, name, email, password, phone, address,nidNo } = req.body;
+
+    const image = req.file;
+   
+    if(!image){
+      throw new Error('Image file is required');
+    }
+    if(image.size > 1024*1024*5){
+      throw new Error('File is too large,It must be less than 5 mb');
+    }
+
+    
+ 
+    const imageBufferString = image.buffer.toString('base64');  //algorithm
+
+    const userExists = await User.exists({ email: email });
+    if (userExists) {
+      throw new Error('User with this email already exists, please sign in');
+    }
+     
+    const newUser = new User({
+      userType,
+      name,
+      email,
+      password,
+      phone,
+      address,
+      image:imageBufferString,
+      nidNo
+    });
+    const savedUser = await newUser.save();
+
+    return successResponse(res, {
+      statusCode: 200,
+      message: `Please go to your ${email} to complete your registration`,
+      payload:{savedUser}
+   
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
   
 
 
@@ -377,7 +424,8 @@ module.exports = {
     userToUnFillingStationOwnerByIdForAdmin,
     getFillingStationOwnerForAdmin,
     getFillingStationOwnerByIdForAdmin,
-    deleteFillingStationOwnerByIdForAdmin
+    deleteFillingStationOwnerByIdForAdmin,
+    processRegister
     
     
 };
