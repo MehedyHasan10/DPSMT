@@ -20,7 +20,7 @@ const getUsersForAdmin = async (req,res,next) =>{
     const page = Number(req.query.page) || 1; 
     const limit = Number(req.query.limit) || 5; 
 
-
+    const type = req.query.type || false;
     const searchRegExp = new RegExp('.*'+ search + '.*','i') ; 
     
     const filter = {
@@ -32,14 +32,24 @@ const getUsersForAdmin = async (req,res,next) =>{
             {nidNo:{$regex:searchRegExp}},       
         ],
     };
+    const filterUserType = {
+      isAdmin: {$ne: true},
+      userType: type ==='customer'?'customer':type ==='fillingStationOwner'?'fillingStationOwner':type ==='serviceCenterOwner'?'serviceCenterOwner':type ==='deliveryman'?'deliveryman':'serviceman',
+      $or:[  
+          {name:{$regex:searchRegExp}},
+          {email:{$regex:searchRegExp}},
+          {phone:{$regex:searchRegExp}},  
+          {nidNo:{$regex:searchRegExp}},       
+      ],
+  };
 
 
     const options = {
         password:0
     };
+   
 
-
-    const users = await User.find(filter,options)                                                         
+    const users = await User.find(type?filterUserType:filter,options)                                                         
     .limit(limit)
     .skip((page-1) * limit);
     const count = await User.find(filter).countDocuments();
@@ -256,113 +266,6 @@ const userToUnFillingStationOwnerByIdForAdmin = async (req, res, next) => {
     }
 };
 
-const getFillingStationOwnerForAdmin = async (req,res,next) =>{
-
-    try{
-         
-    const search = req.query.search || "";
-    const page = Number(req.query.page) || 1; 
-    const limit = Number(req.query.limit) || 5; 
-
-
-    const searchRegExp = new RegExp('.*'+ search + '.*','i') ; 
-    
-    const filter = {
-        userType: 'fillingStationOwner',
-        isAdmin: {$ne: true},
-        $or:[  
-            {name:{$regex:searchRegExp}},
-            {email:{$regex:searchRegExp}},
-            {phone:{$regex:searchRegExp}},  
-            {nidNo:{$regex:searchRegExp}},       
-        ], 
-    };
-
-
-    const options = {
-        password:0
-    };
-
-
-    const users = await User.find(filter,options)                                                         
-    .limit(limit)
-    .skip((page-1) * limit);
-    const count = await User.find(filter).countDocuments();
-
-    
-    if (users.length === 0) {
-      throw createError(404, 'Filling Station Owner Not found');
-    }
-   
-    return successResponse(res,{
-        statusCode:200,
-        message:'Users Returned...........',
-        payload:{
-            users,
-            pagination: {
-                 totalPages: Math.ceil(count / limit),
-                 currentPage:page,
-                 previousPage: page - 1> 0 ? page-1 : null,
-                 nextPAge: page + 1 <= Math.ceil(count / limit) ? page + 1 : null ,
-            },
-        },
-       
-    });
-
-} catch (error){
-    next(error);
-}
-};
-
-const getFillingStationOwnerByIdForAdmin = async (req,res,next) =>{
-
-    try{
-        const id = req.params.id;
-        const options = {password: 0}
-      
-        const user = await User.findById({ _id: id, userType: 'fillingStationOwner' }, options);
-
-        if (!user) {
-            throw createError(404, 'Filling Station Owner not found');
-          }
-
-        return successResponse (res,{
-            statusCode: 200,
-            message:'user return sucessfully',
-            payload: {user},
-        });
-              
-} catch (error){
-    next(error);
-}
-};
-
-const deleteFillingStationOwnerByIdForAdmin = async (req, res, next) => {
-    try {
-        const id = req.params.id;
-        const options = { password: 0 };
-        const user = await User.findById({ _id: id, userType: 'fillingStationOwner' }, options);
-
-        if (!user) {
-            throw createError(404, 'user not found');
-          }
-
-        await User.findByIdAndDelete({
-            _id: id,
-            isAdmin: false,
-        });
-        return successResponse (res,{
-            statusCode: 200,
-            message:'user delete sucessfully',
-         
-        });
-              
-} catch (error){
-    next(error);
-}
-};
-
-
 const processRegister = async (req, res, next) => {
   try {
     const {userType, name, email, password, phone, address,nidNo } = req.body;
@@ -422,9 +325,6 @@ module.exports = {
     userUnbannedByIdForAdmin,
     userToFillingStationOwnerByIdForAdmin,
     userToUnFillingStationOwnerByIdForAdmin,
-    getFillingStationOwnerForAdmin,
-    getFillingStationOwnerByIdForAdmin,
-    deleteFillingStationOwnerByIdForAdmin,
     processRegister
     
     

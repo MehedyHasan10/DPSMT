@@ -3,8 +3,6 @@ const {
         getUsersForAdmin,
         getUserByIdForAdmin,
         deleteUserByIdForAdmin,
-        getFillingStationOwnerForAdmin,
-        getFillingStationOwnerByIdForAdmin,
         updateUserByIdForAdmin,
         userToFillingStationOwnerByIdForAdmin,
         userToUnFillingStationOwnerByIdForAdmin,
@@ -48,10 +46,6 @@ userRouter.put('/make-fillingStationOwner/:id([a-fA-F0-9]{24})',
 userRouter.put('/unmake-fillingStationOwner/:id([a-fA-F0-9]{24})',
                userToUnFillingStationOwnerByIdForAdmin );
 
-userRouter.get('/findFillingStationOwner',
-               getFillingStationOwnerForAdmin);
 
-userRouter.get('/findFillingStationOwner/:id([a-fA-F0-9]{24})',
-               getFillingStationOwnerByIdForAdmin);
 
 module.exports=userRouter;
