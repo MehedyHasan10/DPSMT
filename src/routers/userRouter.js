@@ -4,10 +4,10 @@ const {
         getUserByIdForAdmin,
         deleteUserByIdForAdmin,
         updateUserByIdForAdmin,
-        userToFillingStationOwnerByIdForAdmin,
-        userToUnFillingStationOwnerByIdForAdmin,
         userBannedByIdForAdmin,
         userUnbannedByIdForAdmin,
+        userToOwnerShipByIdForAdmin,
+        userToUnOwnerShipByIdForAdmin,
         processRegister
        } = require('../controllers/userController');
 
@@ -40,11 +40,11 @@ userRouter.put('/ban-user/:id([a-fA-F0-9]{24})',
 userRouter.put('/unban-user/:id([a-fA-F0-9]{24})',
                userUnbannedByIdForAdmin);
 
-userRouter.put('/make-fillingStationOwner/:id([a-fA-F0-9]{24})',
-               userToFillingStationOwnerByIdForAdmin );
+userRouter.put('/make-owner/:id([a-fA-F0-9]{24})',
+               userToOwnerShipByIdForAdmin);
 
-userRouter.put('/unmake-fillingStationOwner/:id([a-fA-F0-9]{24})',
-               userToUnFillingStationOwnerByIdForAdmin );
+userRouter.put('/unmake-owner/:id([a-fA-F0-9]{24})',
+               userToUnOwnerShipByIdForAdmin);
 
 
 

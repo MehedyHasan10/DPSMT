@@ -81,7 +81,7 @@ const userSchema = new Schema({
     default: false
   },
 
-  isServiceCenter: {
+  isServiceCenteOwner: {
     type: Boolean,
     default: false
   },
