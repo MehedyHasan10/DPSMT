@@ -9,7 +9,10 @@ const {
         userToOwnerShipByIdForAdmin,
         userToUnOwnerShipByIdForAdmin,
         processRegister,
-        activateAccount
+        activateAccount,
+        updatePassword,
+        forgetPassword,
+        resetPassword
        } = require('../controllers/userController');
 
 const userRouter = express.Router();
@@ -49,6 +52,17 @@ userRouter.put('/make-owner/:id([a-fA-F0-9]{24})',
 
 userRouter.put('/unmake-owner/:id([a-fA-F0-9]{24})',
                userToUnOwnerShipByIdForAdmin);
+
+userRouter.put('/update-password/:id([a-fA-F0-9]{24})',
+               updatePassword);
+
+userRouter.post('/forget-password',
+               forgetPassword);
+
+userRouter.put('/reset-password',
+               resetPassword);
+
+
 
 
 
