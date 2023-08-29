@@ -24,7 +24,8 @@ const rateLimiter = rateLimit({
 app.use(morgan('dev'));
 app.use(xssClean());
 app.use(rateLimiter);
-app.use(bodyParser.json());  
+//app.use(bodyParser.json());  
+app.use(bodyParser.json({ limit: '1mb' }));
 app.use(bodyParser.urlencoded({extended: true}));
 
 

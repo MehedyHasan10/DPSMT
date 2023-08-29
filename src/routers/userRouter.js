@@ -8,7 +8,8 @@ const {
         userUnbannedByIdForAdmin,
         userToOwnerShipByIdForAdmin,
         userToUnOwnerShipByIdForAdmin,
-        processRegister
+        processRegister,
+        activateAccount
        } = require('../controllers/userController');
 
 const userRouter = express.Router();
@@ -20,6 +21,9 @@ userRouter.post('/process-register',
                   upload.single("image"), 
                   processRegister);
 
+userRouter.post('/verify',
+                  activateAccount);
+
 
 userRouter.get('/',
                getUsersForAdmin);
@@ -27,7 +31,7 @@ userRouter.get('/',
 userRouter.get('/:id([a-fA-F0-9]{24})',         
                getUserByIdForAdmin);
 
-userRouter.put('/:id([a-fA-F0-9]{24})',
+userRouter.put('/update/:id([a-fA-F0-9]{24})',
                upload.single("image"),
                updateUserByIdForAdmin);
 

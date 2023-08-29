@@ -1,12 +1,11 @@
 const createError = require("http-errors");
 const User = require("../models/userModel");
 const { successResponse, errorResponse } = require("./responseController");
-
-//const { createJsonWebToken } = require('../helper/jsonWebToken');
-//const { jwtActivationKey, clientURL, jwtRestPasswordKey } = require('../secret');
-//const emailwithNodeMailer = require('../helper/email');
-//const jwt = require('jsonwebtoken');
-//const bcrypt = require('bcryptjs');
+const emailWithNodeMailer = require("../middlewares/email");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcryptjs");
+const { createJsonWebToken } = require("../middlewares/jsonWebToken");
+const { jwtActivationKey, clientURL } = require("../secret");
 
 const getUsersForAdmin = async (req, res, next) => {
   try {
@@ -302,48 +301,6 @@ const userToUnOwnerShipByIdForAdmin = async (req, res, next) => {
   }
 };
 
-const processRegister = async (req, res, next) => {
-  try {
-    const { userType, name, email, password, phone, address, nidNo } = req.body;
-
-    const image = req.file;
-
-    if (!image) {
-      throw new Error("Image file is required");
-    }
-    if (image.size > 1024 * 1024 * 5) {
-      throw new Error("File is too large,It must be less than 5 mb");
-    }
-
-    const imageBufferString = image.buffer.toString("base64"); //algorithm
-
-    const userExists = await User.exists({ email: email });
-    if (userExists) {
-      throw new Error("User with this email already exists, please sign in");
-    }
-
-    const newUser = new User({
-      userType,
-      name,
-      email,
-      password,
-      phone,
-      address,
-      image: imageBufferString,
-      nidNo,
-    });
-    const savedUser = await newUser.save();
-
-    return successResponse(res, {
-      statusCode: 200,
-      message: `Please go to your ${email} to complete your registration`,
-      payload: { savedUser },
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
 const updateUserByIdForAdmin = async (req, res, next) => {
   try {
     const id = req.params.id;
@@ -374,12 +331,12 @@ const updateUserByIdForAdmin = async (req, res, next) => {
       throw createError(404, "User not found");
     }
 
-    const UpdateOptions = { new: true, context: "query" }; //runValidation: true,
+    const UpdateOptions = { new: true, context: "query" }; // ! runValidation: true,
     let updates = {};
 
     for (let key in req.body) {
       if (["name"].includes(key)) {
-        //, 'password', 'address', 'phone','centerName','nidNo'
+        //! , 'password', 'address', 'phone','centerName','nidNo'
         updates[key] = req.body[key];
       } else if (["email"].includes(key)) {
         throw createError(400, "email can not be update");
@@ -415,6 +372,104 @@ const updateUserByIdForAdmin = async (req, res, next) => {
   }
 };
 
+const processRegister = async (req, res, next) => {
+  try {
+    const { userType, name, email, password, phone, address, nidNo } = req.body;
+
+    const image = req.file;
+
+    if (!image) {
+      throw new Error("Image file is required");
+    }
+    if (image.size > 1024 * 1024 * 2) {
+      throw new Error("File is too large,It must be less than 2 mb");
+    }
+
+    const imageBufferString = image.buffer.toString("base64");
+
+    const userExists = await User.exists({ email: email });
+    if (userExists) {
+      throw new Error("User with this email already exists, please sign in");
+    }
+    //create jwt
+    const token = createJsonWebToken(
+      "15m",
+      {
+        userType,
+        name,
+        email,
+        password,
+        phone,
+        address,
+        image: imageBufferString,
+        nidNo,
+      },
+      jwtActivationKey
+    );
+
+    const emailData = {
+      email,
+      subject: "Account Activation Email",
+      html: `
+        <h2>Hello ${name}</h2>
+        <p>Please click here to
+         <a href="${clientURL}/api/users/activate/${token}" target="_blank">
+        activate your account</a> 
+        </p>  `,
+    };
+
+    try {
+      await emailWithNodeMailer(emailData);
+    } catch (emailError) {
+      next(createError(500, "Failed to send verification email"));
+      return;
+    }
+
+    
+
+    return successResponse(res, {
+      statusCode: 200,
+      message: `Please go to your ${email} to complete your registration`,
+      payload: { token },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+const activateAccount = async (req, res, next) => {
+  try {
+    const token = req.body.token;
+    console.log("Token Length:", token.length);
+    if (!token) {
+       throw createError(404, "Token not found");
+    }
+   
+
+    const decoded = jwt.verify(token,jwtActivationKey);
+    console.log(decoded);
+
+    await User.create(decoded);
+
+
+
+    return successResponse(res, {
+      statusCode: 201,
+      message: "User was registered successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+
+
+
+
+
+
 module.exports = {
   getUsersForAdmin,
   getUserByIdForAdmin,
@@ -425,4 +480,5 @@ module.exports = {
   userToOwnerShipByIdForAdmin,
   userToUnOwnerShipByIdForAdmin,
   processRegister,
+  activateAccount,
 };
