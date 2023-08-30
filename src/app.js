@@ -10,6 +10,8 @@ const { errorResponse } = require("./controllers/responseController");
 const seedRouter = require("./routers/seedRouter");
 const userRouter = require("./routers/userRouter");
 const authRouter = require("./routers/authRouter");
+const categoryRouter = require("./routers/categoryRouter");
+const productRouter = require("./routers/productRouter");
 
 const rateLimiter = rateLimit({
   windowMS: 1 * 60 * 1000, // 1 minute
@@ -20,15 +22,14 @@ const rateLimiter = rateLimit({
 app.use(morgan("dev"));
 app.use(xssClean());
 app.use(rateLimiter);
-//app.use(bodyParser.json());
 app.use(bodyParser.json({ limit: "1mb" }));
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use("/api/seed", seedRouter);
 app.use("/api/users", userRouter);
 app.use("/api/auth", authRouter);
-
-
+app.use("/api/categories", categoryRouter);
+app.use("/api/products", productRouter);
 
 //client error handling
 app.use((req, res, next) => {

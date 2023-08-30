@@ -5,7 +5,11 @@ const emailWithNodeMailer = require("../middlewares/email");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const { createJsonWebToken } = require("../middlewares/jsonWebToken");
-const { jwtActivationKey, clientURL, jwtRestPasswordKey } = require("../secret");
+const {
+  jwtActivationKey,
+  clientURL,
+  jwtRestPasswordKey,
+} = require("../secret");
 
 const getUsersForAdmin = async (req, res, next) => {
   try {
@@ -457,122 +461,106 @@ const activateAccount = async (req, res, next) => {
   }
 };
 
-
-const updatePassword  = async (req, res, next) => {
+const updatePassword = async (req, res, next) => {
   try {
-
-    const {oldPassword,newPassword} = req.body;
+    const { oldPassword, newPassword } = req.body;
     const id = req.params.id;
     const user = await User.findById(id);
 
     const isPasswordMatch = await bcrypt.compare(oldPassword, user.password);
-      if (!isPasswordMatch) {
-        throw createError(400, 'Old Password did not match');
-      }
-   
+    if (!isPasswordMatch) {
+      throw createError(400, "Old Password did not match");
+    }
+
     const updateUser = await User.findByIdAndUpdate(
       id,
-     { password: newPassword },
-     { new: true }
-
-      ).select("-password");  
+      { password: newPassword },
+      { new: true }
+    ).select("-password");
 
     if (!updateUser) {
-      throw new Error('Password did not update');
+      throw new Error("Password did not update");
     }
 
     return successResponse(res, {
       statusCode: 200,
-      message: 'Update password successfully',
-      payload: {updateUser}
-    
+      message: "Update password successfully",
+      payload: { updateUser },
     });
   } catch (error) {
     next(error);
   }
 };
 
-const forgetPassword  = async (req, res, next) => {
+const forgetPassword = async (req, res, next) => {
   try {
+    const { email } = req.body;
+    const user = await User.findOne({ email: email });
 
-    const {email} = req.body;
-    const user = await User.findOne({email:email});
-    
-    if(!user){
-      throw createError(404,'Email is incorrect');
-
+    if (!user) {
+      throw createError(404, "Email is incorrect");
     }
 
     const token = createJsonWebToken(
-      '15m', // expiresIn
+      "15m", // expiresIn
       { email },
       jwtRestPasswordKey
     );
 
     const emailData = {
       email,
-      subject: 'Reset Password Email',
+      subject: "Reset Password Email",
       html: `
         <h2>Hello ${user.name}</h2>
         <p>Please click here to
          <a href="${clientURL}/api/users/reset-password/${token}" target="_blank">
         reset your password</a> 
-        </p>  `
+        </p>  `,
     };
 
     try {
       await emailWithNodeMailer(emailData);
     } catch (emailError) {
-      next(createError(500, 'Failed to send reset password email'));
+      next(createError(500, "Failed to send reset password email"));
       return;
     }
-
 
     return successResponse(res, {
       statusCode: 200,
       message: `Please go to your ${email} to reset password`,
       payload: { token },
     });
-    
-    
   } catch (error) {
     next(error);
   }
 };
 
-
-const resetPassword  = async (req, res, next) => {
+const resetPassword = async (req, res, next) => {
   try {
-
-    const {token,password} = req.body;
-    const decoded = jwt.verify(token,jwtRestPasswordKey);
-    if(!decoded){
-      throw createError(400,'Invalid token')
+    const { token, password } = req.body;
+    const decoded = jwt.verify(token, jwtRestPasswordKey);
+    if (!decoded) {
+      throw createError(400, "Invalid token");
     }
-    
 
     const updateUser = await User.findOneAndUpdate(
-     { email: decoded.email}, //decoded the email address from forgetPassword 
-     { password:password },   //update password the password comes from req.body (password)
-     { new: true }
-
-      ).select("-password");  
+      { email: decoded.email },
+      { password: password },
+      { new: true }
+    ).select("-password");
 
     if (!updateUser) {
-      throw new Error('Password did not reset');
+      throw new Error("Password did not reset");
     }
 
     return successResponse(res, {
       statusCode: 200,
-      message: 'Reset password successfully',
-    
+      message: "Reset password successfully",
     });
   } catch (error) {
     next(error);
   }
 };
-
-
 
 module.exports = {
   getUsersForAdmin,
@@ -587,5 +575,5 @@ module.exports = {
   activateAccount,
   updatePassword,
   forgetPassword,
-  resetPassword
+  resetPassword,
 };
