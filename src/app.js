@@ -12,6 +12,7 @@ const userRouter = require("./routers/userRouter");
 const authRouter = require("./routers/authRouter");
 const categoryRouter = require("./routers/categoryRouter");
 const productRouter = require("./routers/productRouter");
+const orderRouter = require("./routers/orderRouter");
 
 const rateLimiter = rateLimit({
   windowMS: 1 * 60 * 1000, // 1 minute
@@ -30,7 +31,7 @@ app.use("/api/users", userRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/categories", categoryRouter);
 app.use("/api/products", productRouter);
-
+app.use("/api/order",orderRouter);
 //client error handling
 app.use((req, res, next) => {
   next(createError(404, "route not found"));
