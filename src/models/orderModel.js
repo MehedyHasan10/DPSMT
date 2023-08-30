@@ -19,6 +19,17 @@ const orderSchema = new Schema(
       required: [true, 'Quantity is required'],
       min: 1,
     },
+    totalPrice: {
+      type: Number,
+      required: true,
+      default: 0,
+    },
+  
+    orderStatus: {
+      type: String,
+      required: true,
+      default: 'processing',
+    },
     orderDate: {
       type: Date,
       default: Date.now,

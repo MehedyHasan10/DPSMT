@@ -8,7 +8,7 @@ const { successResponse, errorResponse } = require("./responseController");
 
 const placeOrder = async (req, res, next) => {
   try {
-    const { nidNo, productId, quantity } = req.body;
+    const { nidNo, productId, quantity,totalPrice } = req.body;
 
     const last24Hours = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
@@ -29,6 +29,7 @@ const placeOrder = async (req, res, next) => {
       nidNo,
       productId,
       quantity,
+      totalPrice,
       orderDate: Date.now(),
     });
 
